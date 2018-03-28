@@ -9,17 +9,30 @@
 <p>
     <a asp-action="Create"><button class="btn btn-primary">Nuevo Registro</button></a>
 </p>
+<br><br>
+<form asp-action="Index" method="get">
+    <div class="form-actions no-color">
+        <p>            
+            Filtro: <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"/>
+            <input type="submit" value="Buscar" class="btn btn-default"/>
+            <a asp-action="Index"><button class="btn btn-primary">Todos los Registros</button></a>
+        </p>
+    </div>
+</form>
 <table class="table">
     <thead>
         <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Nombre)
+                    <a asp-action="Index" asp-route-sortOrder="@ViewData["NombreSortParm"]">@Html.DisplayNameFor(model => model.Nombre)</a>
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Descripcion)
+                   <a asp-action="Index" asp-route-sortOrder="@ViewData["DescripcionSortParm"]">@Html.DisplayNameFor(model => model.Descripcion)</a>
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Estado)
+                </th>
+                <th>
+                    Acciones
                 </th>
             <th></th>
         </tr>

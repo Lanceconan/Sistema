@@ -18,10 +18,51 @@ namespace Sistema.Controllers
             _context = context;
         }
 
-        // GET: Categorias
-        public async Task<IActionResult> Index()
+        // GET: Categorias sortOrder y searchString son parametros que se envían por URL
+        public async Task<IActionResult> Index(string sortOrder, string searchString)
         {
-            return View(await _context.Categoria.ToListAsync());
+            //Crear dos parametros que va a recibir la vista Index del modelo de Categoria
+            ViewData["NombreSortParm"] = String.IsNullOrEmpty(sortOrder) ? "nombre_desc" : "";
+            ViewData["DescripcionSortParm"] = sortOrder == "descripcion_asc" ? "descripcion_desc" : "descripcion_asc";
+            
+            //Parametro para implementar la búsqueda por filtros
+            ViewData["CurrentFilter"] = searchString;
+           
+            //Cargará todas las categorías disponibles en la BD
+            var categorias = from s in _context.Categoria select s;
+
+            //Si el parametro de entrada contiene algún valor para filtrar busqueda, entonces se realiza el filtro
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                categorias = categorias.Where(s => s.Nombre.Contains(searchString) || s.Descripcion.Contains(searchString));
+            }
+
+            //Dependiendo del caso de orden, se ordenarán los datos
+            switch (sortOrder)
+            {
+                case "nombre_desc":
+                    categorias = categorias.OrderByDescending(s => s.Nombre);
+                    break;
+
+                case "descripcion_desc":
+                    categorias = categorias.OrderByDescending(s => s.Descripcion);
+                    break;
+
+                case "descripcion_asc":
+                    categorias = categorias.OrderBy(s => s.Descripcion);
+                    break;
+
+                default:
+                    categorias = categorias.OrderBy(s => s.Nombre);
+                    break;
+            }
+
+            //Se retorna a la vista todos los datos ya ordenados dependiendo del caso
+            return View(await categorias.AsNoTracking().ToListAsync());
+
+
+
+            //return View(await _context.Categoria.ToListAsync());
         }
 
         // GET: Categorias/Details/5
