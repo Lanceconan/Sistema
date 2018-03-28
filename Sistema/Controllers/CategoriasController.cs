@@ -18,15 +18,33 @@ namespace Sistema.Controllers
             _context = context;
         }
 
-        // GET: Categorias sortOrder y searchString son parametros que se envían por URL
-        public async Task<IActionResult> Index(string sortOrder, string searchString)
+        // GET: Categorias sortOrder,currentFilter, searchString y page son parametros que se envían por URL
+        public async Task<IActionResult> Index(
+            string sortOrder, 
+            string currentFilter,
+            string searchString,
+            int? page
+            )
         {
             //Crear dos parametros que va a recibir la vista Index del modelo de Categoria
             ViewData["NombreSortParm"] = String.IsNullOrEmpty(sortOrder) ? "nombre_desc" : "";
             ViewData["DescripcionSortParm"] = sortOrder == "descripcion_asc" ? "descripcion_desc" : "descripcion_asc";
             
+            //Se condiciona para saber si existe un filtro de busqueda la pagina será 1 y si no hay datos la cadena de filtro de busqueda  se mantienen los parametros de busqueda
+            if(searchString != null)
+            {
+                page = 1;
+            }
+            else
+            {
+                searchString = currentFilter;
+            }
+
             //Parametro para implementar la búsqueda por filtros
             ViewData["CurrentFilter"] = searchString;
+
+            //Proporciona a la vista el orden actual
+            ViewData["CurrentSort"] = sortOrder;
            
             //Cargará todas las categorías disponibles en la BD
             var categorias = from s in _context.Categoria select s;
@@ -58,10 +76,13 @@ namespace Sistema.Controllers
             }
 
             //Se retorna a la vista todos los datos ya ordenados dependiendo del caso
-            return View(await categorias.AsNoTracking().ToListAsync());
+            //return View(await categorias.AsNoTracking().ToListAsync());
 
-
-
+            //Numero total de registros mostrados por página
+            int pageSize = 3;
+            return View(await Paginacion<Categoria>.CreateAsync(categorias.AsNoTracking(), page ?? 1, pageSize));
+            
+            
             //return View(await _context.Categoria.ToListAsync());
         }
 
